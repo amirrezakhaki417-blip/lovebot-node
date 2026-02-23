@@ -1,64 +1,68 @@
-const TelegramBot = require("node-telegram-bot-api");
-const cron = require("node-cron");
-const messages = require("./messages");
+const TelegramBot = require('node-telegram-bot-api');
+const express = require('express');
 
-// ================== CONFIG ==================
-const TOKEN = "8533109904:AAHfGmuOt8IC1ZaoJXstkXi7-3mx9qiBDxs";
-const CHAT_IDS = [
-  6608979091, // Hidika
-  5103036372  // You
-];
-const TIMEZONE = "Asia/Tehran";
-// ============================================
+const token = process.env.BOT_TOKEN;
+const bot = new TelegramBot(token, { polling: true });
 
-// Bot (private, no polling)
-const bot = new TelegramBot(TOKEN, { polling: true });
+const app = express();
 
-function sendMessage(text) {
-  CHAT_IDS.forEach(id => {
-    bot.sendMessage(id, text);
-  });
-}
+app.get('/', (req, res) => {
+  res.send('Love Time Bot is running ❤️');
+});
 
-// ---------- Start Message ----------
-sendMessage(messages.start);
-console.log("✅ Bot connected to Telegram (private mode)");
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT} ✅`);
+});
 
-// ---------- Morning Message (08:00) ----------
-cron.schedule(
-  "0 8 * * *",
-  () => sendMessage(messages.morning),
-  { timezone: TIMEZONE }
-);
+// =====================
+// 🎛️ منوی بات
+// =====================
+const menuKeyboard = {
+  reply_markup: {
+    keyboard: [
+      ['💌 پیام عاشقانه', '💖 درصد عشق'],
+      ['⏰ یادآوری امروز'],
+      ['ℹ️ درباره بات']
+    ],
+    resize_keyboard: true,
+    one_time_keyboard: false
+  }
+};
 
-// ---------- Night Message (23:30) ----------
-cron.schedule(
-  "30 23 * * *",
-  () => sendMessage(messages.night),
-  { timezone: TIMEZONE }
-);
+// =====================
+// ▶️ /start
+// =====================
+bot.onText(/\/start/, (msg) => {
+  const chatId = msg.chat.id;
 
-// ---------- Random Love Messages ----------
-const luckyTimes = [
-  "09:09","10:10","11:11","12:12",
-  "13:13","14:14","15:15","16:16",
-  "17:17","18:18","19:19","20:20",
-  "21:21","22:22","23:23"
-];
-
-luckyTimes.forEach(time => {
-  const [hour, minute] = time.split(":");
-
-  cron.schedule(
-    `${minute} ${hour} * * *`,
-    () => {
-      const random =
-        messages.random[
-          Math.floor(Math.random() * messages.random.length)
-        ];
-      sendMessage(random);
-    },
-    { timezone: TIMEZONE }
+  bot.sendMessage(
+    chatId,
+    'سلاممم ❤️\nاز منو یکی رو انتخاب کن 👇',
+    menuKeyboard
   );
 });
 
+// =====================
+// 🧠 هندل دکمه‌ها
+// =====================
+bot.on('message', (msg) => {
+  const chatId = msg.chat.id;
+  const text = msg.text;
+
+  if (!text || text.startsWith('/')) return;
+
+  if (text === '💌 پیام عاشقانه') {
+    bot.sendMessage(chatId, 'دوستت دارم، بیشتر از دیروز ❤️');
+  } else if (text === '💖 درصد عشق') {
+    const percent = Math.floor(Math.random() * 100) + 1;
+    bot.sendMessage(chatId, `امروز ${percent}% عاشقتم 😍`);
+  } else if (text === '⏰ یادآوری امروز') {
+    bot.sendMessage(chatId, 'یادت نره امروز بهش بگی دوستت دارم ❤️');
+  } else if (text === 'ℹ️ درباره بات') {
+    bot.sendMessage(
+      chatId,
+      '💖 Love Time Bot\nساخته شده با عشق ❤️'
+    );
+  }
+});
