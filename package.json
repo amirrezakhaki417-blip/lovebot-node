@@ -1,0 +1,16 @@
+{
+  "name": "love-bot",
+  "version": "1.0.0",
+  "description": "Telegram love message bot",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "node-cron": "^3.0.3",
+    "node-telegram-bot-api": "^0.67.0",
+    "telegraf": "^4.16.2"
+  }
+}
